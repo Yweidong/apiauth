@@ -30,7 +30,7 @@ public class WebRequestIntercptor implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(paramInterceptor())
                 .addPathPatterns("/**")
-                .excludePathPatterns("/auth/*");
+                .excludePathPatterns("/api/v1/auth/*");
     }
 
 
