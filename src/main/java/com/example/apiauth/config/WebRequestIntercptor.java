@@ -1,7 +1,7 @@
 package com.example.apiauth.config;
 
-import com.example.apiauth.interceptor.ParamInterceptor;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
+import com.example.apiauth.interceptor.Oauth2Interceptor;
+import com.example.apiauth.interceptor.TokenInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -19,18 +19,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebRequestIntercptor implements WebMvcConfigurer {
 
 
-    //参数验证
+    //
     @Bean
-    ParamInterceptor paramInterceptor() {
-        return new ParamInterceptor();
+    Oauth2Interceptor oauth2Interceptor() {
+        return new Oauth2Interceptor();
     }
 
+    //获取access_token
+    @Bean
+    TokenInterceptor tokenInterceptor() {
+        return new TokenInterceptor();
+    }
     //自定义的一些拦截器
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(paramInterceptor())
-                .addPathPatterns("/**")
-                .excludePathPatterns("/api/v1/auth/*");
+        registry.addInterceptor(oauth2Interceptor())
+                .addPathPatterns("/oauth2/authorize");
+        registry.addInterceptor(tokenInterceptor())
+                .addPathPatterns("/oauth2/access_token");
     }
 
 

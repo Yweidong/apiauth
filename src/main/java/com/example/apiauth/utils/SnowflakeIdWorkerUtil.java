@@ -12,7 +12,7 @@ package com.example.apiauth.utils;
  * SnowFlake的优点是，整体上按照时间自增排序，并且整个分布式系统内不会产生ID碰撞(由数据中心ID和机器ID作区分)，并且效率较高，经测试，SnowFlake每秒能够产生26万ID左右。
  */
 
-class SnowflakeIdWorker {
+public class SnowflakeIdWorkerUtil {
     // ==============================Fields===========================================
     /** 开始时间截 (2015-01-01) */
     private final long twepoch = 1420041600000L;
@@ -59,11 +59,12 @@ class SnowflakeIdWorker {
     /**
      * 构造函数
      */
-    public SnowflakeIdWorker() {
+    public SnowflakeIdWorkerUtil() {
         this.workerId = 0L;
         this.datacenterId = 0L;
     }
-    public SnowflakeIdWorker(long workerId, long datacenterId) {
+
+    public SnowflakeIdWorkerUtil(long workerId, long datacenterId) {
         if (workerId > maxWorkerId || workerId < 0) {
             throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
         }
@@ -134,14 +135,14 @@ class SnowflakeIdWorker {
 
     //==============================Test=============================================
     /** 测试 */
-    public static void main(String[] args) {
-        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
-        for (int i = 0; i < 1000; i++) {
-            long id = idWorker.nextId();
-//            System.out.println(Long.toBinaryString(id));
-            System.out.println(id);
-        }
-    }
+//    public static void main(String[] args) {
+//        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
+//        for (int i = 0; i < 1000; i++) {
+//            long id = idWorker.nextId();
+////            System.out.println(Long.toBinaryString(id));
+//            System.out.println(id);
+//        }
+//    }
 
 
 }
