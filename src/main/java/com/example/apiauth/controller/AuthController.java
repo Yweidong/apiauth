@@ -41,6 +41,7 @@ public class AuthController{
                                 HttpServletResponse response) throws IOException {
             String code = DeshfuUtil.encrypt(client_id);
            redisTemplate.opsForValue().set(RedisKeyCommon.OAUTH_CODE+client_id,code,300, TimeUnit.SECONDS);
+           response.setHeader("content-type","text/html;charset=utf-8");
         response.sendRedirect(redirect_uri+"?code="+code);
     }
 
