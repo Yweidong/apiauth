@@ -4,6 +4,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.example.apiauth.common.RedisKeyCommon;
 import com.example.apiauth.utils.DeshfuUtil;
 
+import com.example.apiauth.utils.TokenGenerateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,6 +37,8 @@ public class TokenInterceptor implements HandlerInterceptor {
             //通过code来获取凭证
             case "authorization_code":
                return getCodeToken(request,response);
+            case "app_id_secret":
+                return getAppSecretToken(request,response);
         }
 
         return false;
@@ -71,8 +75,38 @@ public class TokenInterceptor implements HandlerInterceptor {
         }
 
         //获取刷新的token
+        String reflash_token = TokenGenerateUtil.createAuthToken();
+        redisTemplate.opsForHash().put(RedisKeyCommon.CODE_REFLASH,reflash_token,client_id);
+        redisTemplate.opsForHash().put(RedisKeyCommon.CODE_TOKEN+client_id,"reflash_token",reflash_token);
+        redisTemplate.expire(RedisKeyCommon.CODE_TOKEN+client_id,30,TimeUnit.DAYS);
+        redisTemplate.expire(RedisKeyCommon.CODE_REFLASH,30,TimeUnit.DAYS);
 
+        return true;
+    }
 
+    public boolean getAppSecretToken(HttpServletRequest request,HttpServletResponse response) throws IOException {
+        String appid = request.getParameter("appid");
+        if(StringUtils.isEmpty(appid)) {
+            response.getWriter().write("appid is must required");
+            return false;
+        }
+        String appsecret = request.getParameter("appsecret");
+        if(StringUtils.isEmpty(appsecret)) {
+            response.getWriter().write("appsecret is must required");
+            return false;
+        }
+        Calendar cal = Calendar.getInstance();
+        int i = cal.get(Calendar.MONTH)+1;
+        if(redisTemplate.opsForHash().hasKey(RedisKeyCommon.APP_ID_SECRET+i,appid)) {
+            String o = (String) redisTemplate.opsForHash().get(RedisKeyCommon.APP_ID_SECRET + i, appid);
+            if(o.equals("30")) {
+                response.getWriter().write("This month the call has reached its limit");
+                return false;
+            }
+            redisTemplate.opsForHash().put(RedisKeyCommon.APP_ID_SECRET+i,appid,String.valueOf(Integer.parseInt(o)+1));
+        }else {
+            redisTemplate.opsForHash().put(RedisKeyCommon.APP_ID_SECRET+i,appid,"1");
+        }
         return true;
     }
 }

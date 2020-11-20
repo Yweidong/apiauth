@@ -38,10 +38,9 @@ public class DeshfuUtil {
             byte[] retByte = cipher.doFinal(bytesrc);
             return new String(retByte);
         }catch (Exception e){
-            e.printStackTrace();
+            return null;
         }
 
-        return null;
     }
 
     //加密数据
@@ -57,9 +56,9 @@ public class DeshfuUtil {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
             return toHexString(cipher.doFinal(message.getBytes("UTF-8")));
         }catch (Exception e){
-           e.printStackTrace();
+           return null;
         }
-        return null;
+
 
     }
 
@@ -96,9 +95,9 @@ public class DeshfuUtil {
                 byte[] bytes = md5.digest();
                 return toHexString(bytes).toUpperCase();
             }catch (Exception e) {
-               e.printStackTrace();
+               return null;
             }
-            return null;
+
         }
     }
 

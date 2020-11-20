@@ -2,7 +2,7 @@ package com.example.apiauth.controller;
 
 import com.example.apiauth.common.RedisKeyCommon;
 import com.example.apiauth.utils.DeshfuUtil;
-import com.example.apiauth.utils.SnowflakeIdWorkerUtil;
+import com.example.apiauth.utils.TokenGenerateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -48,14 +48,24 @@ public class AuthController{
     @PostMapping("access_token")
     public HashMap<Object, Object> getCodeAccessToken(@RequestParam("client_id") String client_id) {
         HashMap<Object, Object> map = new HashMap<>();
-        SnowflakeIdWorkerUtil idWorker = new SnowflakeIdWorkerUtil(0, 0);
-        long id = idWorker.nextId();
-        String encrypt = DeshfuUtil.encrypt(String.valueOf(id));
-        redisTemplate.opsForValue().set(RedisKeyCommon.CODE_TOKEN+client_id,encrypt,3600,TimeUnit.SECONDS);
+        String authToken = TokenGenerateUtil.createAccessToken();
         redisTemplate.delete(RedisKeyCommon.OAUTH_CODE+client_id);
-        map.put("access_token",encrypt);
+        map.put("access_token",authToken);
         map.put("expire_in",3600);
+        map.put("reflash_token",redisTemplate.opsForHash().get(RedisKeyCommon.CODE_TOKEN+client_id,"reflash_token"));
         return map;
+    }
+
+    //通过刷新token来重新获取access_token凭证
+    @PostMapping("reflash_token")
+    public HashMap<Object, Object> reflash_token(@RequestParam("reflash_token") String reflash_token) {
+        HashMap<Object, Object> map = new HashMap<>();
+        String authToken = TokenGenerateUtil.createAccessToken();
+        map.put("access_token",authToken);
+        map.put("expire_in",3600);
+        map.put("reflash_token",reflash_token);
+        return map;
+
     }
 
 
